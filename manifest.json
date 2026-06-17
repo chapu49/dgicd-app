@@ -2,6 +2,7 @@
   "name": "DGIyCD – Planilla de Asistencia",
   "short_name": "DGIyCD",
   "description": "Registro de actividades - Dirección General de Innovación y Contenidos Digitales del Ministerio de Educación del Neuquén",
+  "id": "dgicd-app",
   "start_url": "/dgicd-app/index.html",
   "scope": "/dgicd-app/",
   "display": "standalone",
@@ -9,22 +10,19 @@
   "theme_color": "#2b3e4c",
   "orientation": "portrait",
   "lang": "es",
+  "categories": ["productivity", "education"],
   "icons": [
     {
-      "src": "https://chapu49.github.io/dgicd-app/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://chapu49.github.io/dgicd-app/icon.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "https://chapu49.github.io/dgicd-app/icon.svg",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
