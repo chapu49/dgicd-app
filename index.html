@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2b3e4c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>DGIyCD – Planilla de Asistencia</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --v:#2b3e4c;--v2:#3a5468;--lima:#87b867;--lima-c:#e8f4d8;
+  --bl:#fcf2dc;--bg:#f4dfb9;--borde:#e0ceaa;--gt:#4a5e6e;--t:#2b3e4c;
+  --az:#2b3e4c;--az-c:#e8f0f6;--s:0 2px 10px rgba(43,62,76,.12);--r:10px;
+  --beige1:#fcf2dc;--beige2:#f4dfb9;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Manrope',system-ui,sans-serif;background:var(--beige2);color:var(--t);min-height:100vh;padding-bottom:76px}
+
+/* HEADER */
+header{background:var(--v);color:var(--beige1);padding:12px 16px 10px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(43,62,76,.3);display:flex;align-items:center;gap:12px}
+.hlogo{width:38px;height:38px;flex-shrink:0;background:var(--beige1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;font-style:normal;color:var(--v);letter-spacing:-1px;font-family:'Manrope',sans-serif}
+.htext .org{font-size:9px;letter-spacing:.09em;text-transform:uppercase;opacity:.65;margin-bottom:1px;color:var(--beige2)}
+.htext h1{font-size:14px;font-weight:700;color:var(--beige1)}
+.hmes{margin-left:auto;background:var(--lima);color:var(--v);font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--beige1);border-top:1.5px solid var(--borde);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(43,62,76,.10)}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;border:none;background:none;color:var(--gt);font-size:10px;font-weight:600;cursor:pointer;gap:3px;transition:color .15s;font-family:inherit}
+.bn svg{width:22px;height:22px;stroke-width:2}
+.bn.active,.bn.active svg{color:var(--v);stroke:var(--v)}
+
+/* VIEWS */
+.view{display:none;padding:14px}.view.active{display:block}
+
+/* CARDS */
+.card{background:var(--beige1);border-radius:var(--r);box-shadow:var(--s);padding:16px;margin-bottom:14px}
+.ctitle{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--v2);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.ctitle::before{content:'';display:block;width:3px;height:14px;background:var(--lima);border-radius:2px}
+
+/* FORM */
+label{display:block;font-size:11px;font-weight:700;color:var(--gt);margin-bottom:4px;margin-top:12px;text-transform:uppercase;letter-spacing:.04em}
+label:first-child{margin-top:0}
+input,select,textarea{width:100%;padding:11px 13px;font-size:15px;border:1.5px solid var(--borde);border-radius:8px;background:var(--beige1);color:var(--t);font-family:'Manrope',inherit;appearance:none;-webkit-appearance:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--v2)}
+textarea{resize:vertical;min-height:64px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* SEARCH INPUT */
+.search-wrap{position:relative;margin-bottom:8px}
+.search-wrap input{padding-left:36px}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--gt);pointer-events:none}
+
+/* DROPDOWN */
+.dropdown{position:relative}
+.drop-list{display:none;position:absolute;z-index:50;left:0;right:0;top:100%;background:var(--beige1);border:1.5px solid var(--v2);border-radius:8px;max-height:220px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.drop-list.open{display:block}
+.drop-item{padding:11px 13px;font-size:14px;cursor:pointer;border-bottom:1px solid var(--borde)}
+.drop-item:last-child{border:none}
+.drop-item:hover,.drop-item.focused{background:var(--beige2)}
+.drop-item .di-sub{font-size:11px;color:var(--gt);margin-top:2px}
+
+/* FILTROS CHIP */
+.filtros{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.filtros::-webkit-scrollbar{display:none}
+.fbtn{padding:7px 14px;border:1.5px solid var(--borde);background:var(--beige1);color:var(--gt);border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s;flex-shrink:0}
+.fbtn.fa{border-color:var(--v);color:var(--v);background:var(--beige2)}
+
+/* ACCIONES MULTI-SELECT */
+.acciones-grid{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.acc-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--borde);border-radius:8px;cursor:pointer;transition:all .15s}
+.acc-item.tec-sel{border-color:var(--az);background:var(--az-c)}
+.acc-item.ped-sel{border-color:var(--v);background:var(--lima-c)}
+.acc-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.acc-item.tec-sel .acc-check{background:var(--az);border-color:var(--az)}
+.acc-item.ped-sel .acc-check{background:var(--v);border-color:var(--v)}
+.acc-check svg{width:12px;height:12px;stroke:#fff;display:none}
+.acc-item.tec-sel .acc-check svg,.acc-item.ped-sel .acc-check svg{display:block}
+.acc-label{font-size:14px;font-weight:600}
+.acc-cat{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.tec-tag{color:var(--az)}.ped-tag{color:var(--v)}
+
+/* ACTIVITY CARDS */
+/* SWIPE TO DELETE */
+.swipe-wrap{position:relative;overflow:hidden;border-radius:var(--r);margin-bottom:10px}
+.swipe-bg{position:absolute;inset:0;background:#dc2626;display:flex;align-items:center;justify-content:flex-end;padding-right:20px;border-radius:var(--r)}
+.swipe-bg span{color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px}
+.act-card{background:var(--beige1);box-shadow:var(--s);padding:14px;border-left:4px solid var(--borde);position:relative;transform:translateX(0);transition:transform .2s ease;touch-action:pan-y;will-change:transform;border-radius:var(--r)}
+.act-card.tec{border-left-color:var(--az)}.act-card.ped{border-left-color:var(--lima)}.act-card.both{border-left-color:var(--v)}
+.act-card.removing{transform:translateX(-110%)!important;transition:transform .25s ease;opacity:0}
+.act-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.act-fecha{font-size:13px;font-weight:800}
+.badges{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.badge{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;border-radius:20px}
+.badge-tec{background:var(--az-c);color:var(--az)}.badge-ped{background:var(--lima-c);color:var(--v)}
+.act-meta{font-size:12px;color:var(--gt);margin-bottom:4px}
+.act-inst{font-size:14px;font-weight:700;color:var(--t);margin-bottom:4px}
+.act-acciones{font-size:13px;color:var(--t);line-height:1.5}
+.act-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.btn-del{padding:7px 12px;background:#fee2e2;color:#b91c1c;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;display:none}
+.btn-sm{padding:7px 14px;border:1.5px solid var(--borde);background:var(--beige2);color:var(--t);border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* BTNS */
+.btn-p{width:100%;padding:14px;background:var(--v);color:var(--beige1);border:none;border-radius:var(--r);font-size:15px;font-weight:800;cursor:pointer;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;transition:background .15s}
+.btn-p:active{background:var(--v2)}
+.btn-lima{background:var(--lima)!important;color:var(--v)!important}
+.btn-lima:active{background:#6aad35!important}
+
+/* PLANILLA */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.stat{background:var(--beige1);border-radius:var(--r);padding:14px;text-align:center;box-shadow:var(--s)}
+.stat-n{font-size:32px;font-weight:900;line-height:1}
+.stat-l{font-size:10px;text-transform:uppercase;color:var(--gt);margin-top:3px;letter-spacing:.05em}
+.stat.tec .stat-n{color:var(--az)}.stat.ped .stat-n{color:var(--v)}
+.sem-lbl{font-size:11px;font-weight:800;text-transform:uppercase;color:var(--v);letter-spacing:.07em;margin:16px 0 8px;display:flex;align-items:center;gap:6px}
+.sem-lbl::before{content:'';display:block;width:16px;height:2px;background:var(--lima)}
+.dia-card{background:var(--beige1);border-radius:var(--r);box-shadow:var(--s);margin-bottom:8px;overflow:hidden}
+.dia-head{background:var(--v);color:var(--beige1);padding:8px 14px;font-size:13px;font-weight:800;display:flex;justify-content:space-between}
+.dia-body{padding:10px 14px}
+.dia-empty{font-size:13px;color:var(--gt);font-style:italic}
+.dia-act{margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--borde)}
+.dia-act:last-child{margin:0;padding:0;border:none}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:flex-end}
+.modal-bg.open{display:flex}
+.modal{background:var(--beige1);border-radius:20px 20px 0 0;padding:20px 16px;width:100%;max-height:92vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:800;color:var(--v);margin-bottom:14px}
+.modal-btns{display:flex;gap:10px;margin-top:12px}
+.modal-btns .btn-p{flex:1;margin-top:0}
+
+/* ESCUELA SELECTED */
+.esc-sel-box{background:var(--beige2);border:1.5px solid var(--lima);border-radius:8px;padding:10px 13px;margin-top:6px;display:none}
+.esc-sel-box.show{display:block}
+.esc-sel-nom{font-size:14px;font-weight:700;color:var(--v)}
+.esc-sel-loc{font-size:12px;color:var(--gt);margin-top:2px}
+.esc-clear{float:right;background:none;border:none;color:var(--gt);font-size:18px;cursor:pointer;line-height:1;padding:0}
+
+/* CATEGORÍA SECTION */
+.cat-section{border:1.5px solid var(--borde);border-radius:8px;margin-top:6px;overflow:hidden}
+.cat-sec-hdr{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;user-select:none}
+.cat-sec-hdr input[type=checkbox]{width:18px;height:18px;accent-color:var(--v);flex-shrink:0;cursor:pointer}
+.cat-sec-hdr span{font-size:14px;font-weight:700}
+.cat-sec-body{display:none;padding:0 13px 12px;border-top:1px solid var(--borde);background:var(--beige2)}
+.cat-sec-body.open{display:block}
+
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--gt)}
+.empty-icon{font-size:48px;margin-bottom:10px}
+
+/* TOAST */
+#toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--v);color:var(--beige1);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;transition:all .25s;z-index:999;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* SINÓNIMO input hidden visible */
+#f-inst-id{display:none}
+</style>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .catch(e => console.log('SW error:', e));
+  });
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="hlogo" style="font-size:13px;letter-spacing:-0.5px;font-weight:900;font-family:Manrope,sans-serif">NQN</div>
+  <div class="htext">
+    <div class="org">Ministerio de Educación del Neuquén · DGIyCD</div>
+    <h1>Planilla de Asistencia</h1>
+  </div>
+  <span class="hmes" id="hmes">Mayo 2026</span>
+</header>
+
+<!-- ══════════════ NUEVA ══════════════ -->
+<div id="view-nueva" class="view active">
+<div class="card">
+  <div class="ctitle">Nueva Actividad</div>
+
+  <label>Fecha</label>
+  <input type="date" id="f-fecha">
+
+  <label>Modalidad</label>
+  <select id="f-mod">
+    <option value="Territorio">Territorio</option>
+    <option value="Virtual">Virtual</option>
+    <option value="Sede">Sede / Oficina</option>
+    <option value="Licencia">Licencia</option>
+  </select>
+
+  <!-- Institución con buscador -->
+  <div id="inst-section">
+    <label>Institución / Establecimiento</label>
+    <div style="display:flex;gap:8px;margin-bottom:4px">
+      <select id="f-filtro-dist" style="flex:0 0 auto;width:auto;font-size:13px;padding:8px 10px">
+        <option value="">Todos</option>
+        <option value="14">Distrito 14</option>
+        <option value="5">Distrito 5</option>
+      </select>
+    </div>
+    <div class="dropdown">
+      <div class="search-wrap">
+        <svg class="search-ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="f-inst-search" placeholder="Buscar establecimiento…" autocomplete="off">
+      </div>
+      <div class="drop-list" id="drop-inst"></div>
+    </div>
+    <input type="hidden" id="f-inst-id">
+    <div class="esc-sel-box" id="esc-sel">
+      <button class="esc-clear" onclick="clearEsc()">✕</button>
+      <div class="esc-sel-nom" id="esc-nom"></div>
+      <div class="esc-sel-loc" id="esc-loc"></div>
+    </div>
+    <div style="margin-top:8px">
+      <input type="text" id="f-inst-libre" placeholder="O escribir manualmente…" style="font-size:13px;padding:9px 12px">
+    </div>
+  </div>
+
+  <div class="row2" style="margin-top:12px">
+    <div><label>Hs. Entrada</label><input type="time" id="f-ent"></div>
+    <div><label>Hs. Salida</label><input type="time" id="f-sal"></div>
+  </div>
+
+  <!-- Categorías con acciones -->
+  <label style="margin-top:14px">Acciones realizadas</label>
+
+  <div class="cat-section" id="sec-tec" style="margin-bottom:8px">
+    <div class="cat-sec-hdr" onclick="toggleCat('tec')">
+      <input type="checkbox" id="chk-tec" onclick="event.stopPropagation();toggleCat('tec',this.checked)">
+      <span>⚙️ Técnica</span>
+    </div>
+    <div class="cat-sec-body" id="body-tec">
+      <div class="acciones-grid" id="acc-tec"></div>
+    </div>
+  </div>
+
+  <div class="cat-section" id="sec-ped">
+    <div class="cat-sec-hdr" onclick="toggleCat('ped')">
+      <input type="checkbox" id="chk-ped" onclick="event.stopPropagation();toggleCat('ped',this.checked)">
+      <span>📚 Pedagógica</span>
+    </div>
+    <div class="cat-sec-body" id="body-ped">
+      <div class="acciones-grid" id="acc-ped"></div>
+    </div>
+  </div>
+
+  <label style="margin-top:14px">Observaciones</label>
+  <textarea id="f-obs" placeholder="Notas adicionales (opcional)"></textarea>
+
+  <button class="btn-p" onclick="guardar()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    Guardar actividad
+  </button>
+</div>
+</div>
+
+<!-- ══════════════ LISTA ══════════════ -->
+<div id="view-lista" class="view">
+  <div class="filtros">
+    <button class="fbtn fa" id="f-todos" onclick="filtrar('todos')">Todas</button>
+    <button class="fbtn" id="f-tec" onclick="filtrar('tec')">⚙️ Técnica</button>
+    <button class="fbtn" id="f-ped" onclick="filtrar('ped')">📚 Pedagógica</button>
+  </div>
+  <div id="lista-cnt"></div>
+</div>
+
+<!-- ══════════════ PLANILLA ══════════════ -->
+<div id="view-planilla" class="view">
+  <div class="card">
+    <div class="ctitle">Datos del Empleado</div>
+    <label>Nombre y Apellido</label>
+    <input type="text" id="p-nombre" placeholder="Nombre completo">
+    <label>N° de Empleado</label>
+    <input type="text" id="p-leg" placeholder="Ej: 515459">
+    <div class="row2">
+      <div>
+        <label>Mes</label>
+        <select id="p-mes">
+          <option>Enero</option><option>Febrero</option><option>Marzo</option>
+          <option>Abril</option><option selected>Mayo</option><option>Junio</option>
+          <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+          <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+        </select>
+      </div>
+      <div>
+        <label>Año</label>
+        <input type="text" id="p-anio" value="2026">
+      </div>
+    </div>
+    <button class="btn-p btn-lima" onclick="guardarPerfil()" style="margin-top:12px">Guardar datos</button>
+  </div>
+
+  <div id="stats-cnt"></div>
+  <div id="plan-cnt"></div>
+
+  <button class="btn-p" onclick="exportCSV()" style="margin-bottom:10px">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Exportar Excel (.csv)
+  </button>
+  <button class="btn-p btn-lima" onclick="exportDOCX()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Exportar Planilla Word (.docx)
+  </button>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-bg" id="modal-bg">
+<div class="modal">
+  <div class="modal-title">Editar Actividad</div>
+  <label>Fecha</label><input type="date" id="e-fecha">
+  <label>Modalidad</label>
+  <select id="e-mod"><option>Territorio</option><option>Virtual</option><option>Sede</option><option>Licencia</option></select>
+  <label>Institución</label>
+  <input type="text" id="e-inst" placeholder="Establecimiento o lugar">
+  <div class="row2">
+    <div><label>Hs. Entrada</label><input type="time" id="e-ent"></div>
+    <div><label>Hs. Salida</label><input type="time" id="e-sal"></div>
+  </div>
+
+  <label style="margin-top:14px">Acciones ⚙️ Técnica</label>
+  <div class="acciones-grid" id="e-acc-tec"></div>
+  <label style="margin-top:12px">Acciones 📚 Pedagógica</label>
+  <div class="acciones-grid" id="e-acc-ped"></div>
+
+  <label style="margin-top:12px">Observaciones</label>
+  <textarea id="e-obs"></textarea>
+  <div class="modal-btns">
+    <button class="btn-sm" onclick="cerrarModal()">Cancelar</button>
+    <button class="btn-p" style="margin:0" onclick="guardarEdit()">Guardar</button>
+  </div>
+</div>
+</div>
+
+<nav class="bnav">
+  <button class="bn active" id="bn-nueva" onclick="showView('nueva')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Nueva
+  </button>
+  <button class="bn" id="bn-lista" onclick="showView('lista')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>Actividades
+  </button>
+  <button class="bn" id="bn-planilla" onclick="showView('planilla')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Planilla
+  </button>
+</nav>
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+<script>
+// ── DATOS ────────────────────────────────────────────────────────────────────
+const ESCUELAS = [{"nombre":"ESCUELA PRIMARIA 297","localidad":"LOS CHACAYES","distrito":14},{"nombre":"ESCUELA PRIMARIA 76 CTE PATROCINIO RECABARREN","localidad":"HUINGANCO","distrito":14},{"nombre":"ESCUELA PRIMARIA 149","localidad":"HUARACO","distrito":14},{"nombre":"ESCUELA PRIMARIA 162 PRIMERA AUTORIDAD CIVIL DEL NEUQUEN","localidad":"CHARRA RUCA","distrito":14},{"nombre":"ESCUELA PRIMARIA 93 CHILLKAWE KIMUN","localidad":"LOS MICHES","distrito":14},{"nombre":"ESCUELA PRIMARIA 47","localidad":"CAYANTA","distrito":14},{"nombre":"ESCUELA PRIMARIA 28 PROF.PR\u00d3SPERO ALEMANDRI","localidad":"ANDACOLLO","distrito":14},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 11","localidad":"ANDACOLLO","distrito":14},{"nombre":"ESCUELA PRIMARIA 262 ALBERGUE","localidad":"GUANACOS","distrito":14},{"nombre":"CENTRO COMUNITARIO RURAL EVANG\u00c9LICO ANDACOLLO","localidad":"ANDACOLLO","distrito":14},{"nombre":"ESCUELA PRIMARIA 206","localidad":"VARVARCO","distrito":14},{"nombre":"ESCUELA PRIMARIA 236 GENDARMER\u00cdA NACIONAL","localidad":"PICHI NEUQUEN","distrito":14},{"nombre":"ESCUELA PRIMARIA 246 DIEGO LE\u00d3N GONZ\u00c1LEZ","localidad":"BUTALON NORTE","distrito":14},{"nombre":"ESCUELA PRIMARIA 284","localidad":"COLOMICHICO","distrito":14},{"nombre":"ESCUELA PROVINCIAL DE EDUCACI\u00d3N AGROPECUARIA 1 GOBERNADOR FELIPE SAPAG","localidad":"LAS OVEJAS","distrito":14},{"nombre":"ESCUELA PRIMARIA 30 JUSTO JOS\u00c9 DE URQUIZA","localidad":"LAS OVEJAS","distrito":14},{"nombre":"ESCUELA PRIMARIA 253","localidad":"MANZANO AMARGO","distrito":14},{"nombre":"ESCUELA PRIMARIA 263","localidad":"TIERRAS BLANCAS","distrito":14},{"nombre":"ESCUELA PRIMARIA 18 LAURA ALMENDRA","localidad":"LOS CARRIZOS","distrito":14},{"nombre":"ESCUELA PRIMARIA 21","localidad":"BELLA VISTA","distrito":14},{"nombre":"ESCUELA INFANTIL 40 PICHI RAYEN","localidad":"ANDACOLLO","distrito":14},{"nombre":"CENTRO DE FORMACI\u00d3N PROFESIONAL 16","localidad":"ANDACOLLO","distrito":14},{"nombre":"CENTRO DE FORMACI\u00d3N PROFESIONAL 16 ANEXO MANZANO AMARGO","localidad":"MANZANO AMARGO","distrito":14},{"nombre":"CENTRO DE FORMACI\u00d3N PROFESIONAL 16 ANEXO LOS MICHES","localidad":"LOS MICHES","distrito":14},{"nombre":"CENTRO DE FORMACI\u00d3N PROFESIONAL 18","localidad":"HUINGANCO","distrito":14},{"nombre":"RESIDENCIA ESTUDIANTIL CUMELEN DE NIVEL MEDIO","localidad":"ANDACOLLO","distrito":14},{"nombre":"C.I.A. 6","localidad":"ANDACOLLO","distrito":14},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 84","localidad":"HUINGANCO","distrito":14},{"nombre":"ESCUELA ESPECIAL 16","localidad":"ANDACOLLO","distrito":14},{"nombre":"CENTRO DE EDUCACI\u00d3N F\u00cdSICA 11","localidad":"ANDACOLLO","distrito":14},{"nombre":"ESCUELA INFANTIL 54","localidad":"LAS OVEJAS","distrito":14},{"nombre":"RESIDENCIA ESTUDIANTIL NIVEL MEDIO LAS OVEJAS","localidad":"LAS OVEJAS","distrito":14},{"nombre":"CENTRO DE FORMACI\u00d3N PROFESIONAL 37","localidad":"LAS OVEJAS","distrito":14},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 94","localidad":"VARVARCO","distrito":14},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 95","localidad":"MANZANO AMARGO","distrito":14},{"nombre":"NUCLEAMIENTO EDUCATIVO 10","localidad":"ANDACOLLO","distrito":14},{"nombre":"NUCLEAMIENTO EDUCATIVO 10 ANEXO LOS MICHES","localidad":"LOS MICHES","distrito":14},{"nombre":"NUCLEAMIENTO EDUCATIVO 10 ANEXO LAS OVEJAS","localidad":"LAS OVEJAS","distrito":14},{"nombre":"CENTRO DE INICIACI\u00d3N ART\u00cdSTICA 10","localidad":"LAS OVEJAS","distrito":14},{"nombre":"INSTITUTO SUPERIOR PARA LA EDUCACI\u00d3N TECNOL\u00d3GICA Y PRODUCTIVA DEL NEUQU\u00c9N ANEXO HUINGANCO","localidad":"HUINGANCO","distrito":14},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 97","localidad":"LOS MICHES","distrito":14},{"nombre":"INSTITUTO SUPERIOR DE FORMACI\u00d3N DOCENTE 16","localidad":"LAS OVEJAS","distrito":14},{"nombre":"CENTRO DE EDUCACI\u00d3N F\u00cdSICA 21","localidad":"LAS OVEJAS","distrito":14},{"nombre":"ESCUELA PRIMARIA 310 ALBERGUE","localidad":"COCHICO","distrito":5},{"nombre":"ESCUELA PRIMARIA 15 DESIDERIA LANDESTOY DE MEDRANO","localidad":"CHOS MALAL","distrito":5},{"nombre":"ESCUELA PROVINCIAL DE ENSE\u00d1ANZA T\u00c9CNICA 13","localidad":"CHOS MALAL","distrito":5},{"nombre":"INSTITUTO PROVINCIAL DE EDUCACI\u00d3N TERCIARIA 1 ANEXO TAQUIMIL\u00c1N","localidad":"TAQUIMILAN","distrito":5},{"nombre":"ESCUELA PRIMARIA 96 PAC\u00cdFICO TISSERA","localidad":"CHAPUA","distrito":5},{"nombre":"ESCUELA PRIMARIA 79 ALBERGUE BATALLA DE CHACABUCO","localidad":"CAJON CURILEUVU","distrito":5},{"nombre":"ESCUELA PRIMARIA 66 DON JORGE EMILIO DE VEGA PESSINO","localidad":"LA SALADA","distrito":5},{"nombre":"ESCUELA PRIMARIA 66 DON JORGE EMILIO DE VEGA PESSINO ANEXO ARROYO BLANCO","localidad":"ARROYO BLANCO","distrito":5},{"nombre":"ESCUELA PRIMARIA 331 ALBERGUE","localidad":"CAEPE MALAL","distrito":5},{"nombre":"ESCUELA PRIMARIA 23 JOS\u00c9 MANUEL LABARDEN","localidad":"LOS MENUCOS","distrito":5},{"nombre":"ESCUELA PRIMARIA 24 BENJAM\u00cdN ZORRILLA","localidad":"TRICAO MALAL","distrito":5},{"nombre":"ESCUELA PRIMARIA 25 MAT\u00cdAS COFR\u00c9","localidad":"CANCHA HUINGANCO","distrito":5},{"nombre":"ESCUELA PRIMARIA 71","localidad":"TRES CHORROS","distrito":5},{"nombre":"ESCUELA PRIMARIA 77 JULIANA ORT\u00cdZ DE \u00c1LVAREZ","localidad":"CHACAY MELEHUE/EL ALAMITO","distrito":5},{"nombre":"ESCUELA PRIMARIA 70 ALBERGUE DIRECTOR H\u00c9CTOR ALBERTO JOFR\u00c9","localidad":"NAUNAUCO","distrito":5},{"nombre":"ESCUELA PRIMARIA 68 CACIQUE FRANCISCO HUAYQUILLAN","localidad":"COLIPILLI","distrito":5},{"nombre":"ESCUELA PRIMARIA 31 EJ\u00c9RCITO DE LOS ANDES","localidad":"EL CHOLAR","distrito":5},{"nombre":"ESCUELA PRIMARIA 17 MARCELO BERBEL","localidad":"TAQUIMILAN CENTRO","distrito":5},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 35 MARCELO BERBEL","localidad":"BUTA RANQUIL","distrito":5},{"nombre":"ESCUELA PRIMARIA 251 PROVINCIA DE LA RIOJA","localidad":"LAGUNA AUQUINCO","distrito":5},{"nombre":"ESCUELA PRIMARIA 211 GENDARME ARGENTINO","localidad":"RANQUIL VEGA","distrito":5},{"nombre":"ESCUELA PRIMARIA 173 ALBERGUE RUCA QUIMPEN","localidad":"SIERRA DE HUANTRAICO","distrito":5},{"nombre":"ESCUELA PRIMARIA 127 ALBERGUE","localidad":"AGUADA CHACAYCO","distrito":5},{"nombre":"ESCUELA PRIMARIA 95 PROVINCIA DE SAN LUIS","localidad":"BUTA RANQUIL","distrito":5},{"nombre":"ESCUELA PRIMARIA 32 LEOPOLDO GENARO CARRE\u00d1O","localidad":"BARRANCAS","distrito":5},{"nombre":"ESCUELA PRIMARIA 329 CELESTINO CABRAL","localidad":"BUTA RANQUIL","distrito":5},{"nombre":"INSTITUTO DE FORMACI\u00d3N DOCENTE 2 DPTO DE APLICACI\u00d3N","localidad":"CHOS MALAL","distrito":5},{"nombre":"E.P.A. 4","localidad":"CHOS MALAL","distrito":5},{"nombre":"E.P.A. 4 ANEXO BARRANCAS","localidad":"BARRANCAS","distrito":5},{"nombre":"E.P.A. 4 ANEXO CHORRIACA","localidad":"CHORRIACA","distrito":5},{"nombre":"E.P.A. 4 ANEXO EL ALAMITO","localidad":"CHACAY MELEHUE/EL ALAMITO","distrito":5},{"nombre":"E.P.A. 4 ANEXO TAQUIMILAN","localidad":"TAQUIMILAN","distrito":5},{"nombre":"ESCUELA PRIMARIA 78","localidad":"TRAILATUE","distrito":5},{"nombre":"ESCUELA PRIMARIA 254 ANT\u00c1RTIDA ARGENTINA","localidad":"CHOS MALAL","distrito":5},{"nombre":"ESCUELA PRIMARIA 327 PADRE DOMINGO MILANESIO","localidad":"CHOS MALAL","distrito":5},{"nombre":"ESCUELA ESPECIAL 11 EL PORTAL","localidad":"CHOS MALAL","distrito":5},{"nombre":"ESCUELA PRIMARIA 131","localidad":"BUTACO","distrito":5},{"nombre":"ESCUELA PRIMARIA 112 AMALIA JESUSA URETA DE FUNES","localidad":"TAQUIMILAN","distrito":5},{"nombre":"ESCUELA PRIMARIA 225 L\u00cdA RIVEROS DE FLORES","localidad":"CHOS MALAL","distrito":5},{"nombre":"ESCUELA INFANTIL 16","localidad":"CHOS MALAL","distrito":5},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 4","localidad":"CHOS MALAL","distrito":5},{"nombre":"ESCUELA PRIMARIA 302","localidad":"COLIPILLI","distrito":5},{"nombre":"ESCUELA PRIMARIA 210 ALBERGUE","localidad":"COYUCO","distrito":5},{"nombre":"ESCUELA PRIMARIA 97 RUCA QUIMELTUVE","localidad":"CHORRIACA","distrito":5},{"nombre":"CENTRO DE EDUCACI\u00d3N F\u00cdSICA 5","localidad":"CHOS MALAL","distrito":5},{"nombre":"CENTRO DE FORMACI\u00d3N PROFESIONAL 20","localidad":"CHOS MALAL","distrito":5},{"nombre":"C.I.A. 4","localidad":"CHOS MALAL","distrito":5},{"nombre":"CENTRO DE INICIACI\u00d3N ART\u00cdSTICA 4 ANEXO BUTA RANQUIL","localidad":"BUTA RANQUIL","distrito":5},{"nombre":"CENTRO DE FORMACI\u00d3N PROFESIONAL 27","localidad":"CHOS MALAL","distrito":5},{"nombre":"CENTRO DE FORMACI\u00d3N PROFESIONAL 10","localidad":"BUTA RANQUIL","distrito":5},{"nombre":"ESCUELA PRIMARIA 338 JOS\u00c9 ELISER ALVAREZ","localidad":"LEUTO CABALLO","distrito":5},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 73","localidad":"EL CHOLAR","distrito":5},{"nombre":"CENTRO DE FORMACI\u00d3N PROFESIONAL AGROPECUARIA 5","localidad":"CHOS MALAL","distrito":5},{"nombre":"ESCUELA PRIMARIA 345 IDENTIDAD NEUQUINA","localidad":"CHOS MALAL","distrito":5},{"nombre":"INSTITUTO DE FORMACI\u00d3N DOCENTE 2","localidad":"CHOS MALAL","distrito":5},{"nombre":"ESCUELA INFANTIL 48","localidad":"CHOS MALAL","distrito":5},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 78","localidad":"CHOS MALAL","distrito":5},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 80","localidad":"CHOS MALAL","distrito":5},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 81","localidad":"BARRANCAS","distrito":5},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 82","localidad":"TRICAO MALAL","distrito":5},{"nombre":"CENTRO PROVINCIAL DE ENSE\u00d1ANZA MEDIA 83","localidad":"TAQUIMILAN","distrito":5},{"nombre":"ESCUELA INFANTIL 51","localidad":"BUTA RANQUIL","distrito":5},{"nombre":"PLANTA DE CAMPAMENTO 7 ANEXO VILLU MALLIN PROFESOR ENZO P\u00c1EZ","localidad":"VILLU MALLIN","distrito":5},{"nombre":"CENTRO DE EDUCACI\u00d3N F\u00cdSICA 15","localidad":"BUTA RANQUIL","distrito":5},{"nombre":"CENTRO DE FORMACI\u00d3N PROFESIONAL 7 DEL AULA A LA VIDA","localidad":"EL CHOLAR","distrito":5},{"nombre":"ESCUELA SUPERIOR DE M\u00daINCA - CHOS MALAL","localidad":"CHOS MALAL","distrito":5},{"nombre":"RESIDENCIA ESTUDIANTIL DE NIVEL MEDIO DE TAQUIMILAN","localidad":"TAQUIMILAN","distrito":5},{"nombre":"UNIDAD DE CULTURA TECNOL\u00d3GICA AULA TALLER M\u00d3VIL SOLDADURA","localidad":"BUTA RANQUIL","distrito":5},{"nombre":"UNIDAD DE CULTURA TECNOL\u00d3GICA AULA TALLER M\u00d3VIL ENERG\u00cdAS RENOVABLES","localidad":"CHOS MALAL","distrito":5},{"nombre":"ESCUELA PARA ADULTOS 15 SEDE UNIDAD DE DETENCI\u00d3N 51","localidad":"CHOS MALAL","distrito":5}];
+
+const ACCIONES_TEC = ['Instalación de S.O.','Configuración de Router','Cableado Estructurado','Instalación de Impresora','Configuración de Impresoras en Red','Instalación de Software','Reparación/Mantenimiento Impresora 3D','Instalación Antena Starlink'];
+const ACCIONES_PED = ['Asistencia por Educatic','Promoción Plan Pehuen','Taller Itinerante','Difusión Escuela Digital Neuquina'];
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let acts = JSON.parse(localStorage.getItem('dgicd3_acts') || '[]');
+let perfil = JSON.parse(localStorage.getItem('dgicd3_perf') || '{"nombre":"","legajo":"","mes":"Mayo","anio":"2026"}');
+let filtro = 'todos', editId = null;
+let selTec = new Set(), selPed = new Set();
+let eSelTec = new Set(), eSelPed = new Set();
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+(function(){
+  document.getElementById('f-fecha').value = isoHoy();
+  buildAcciones('acc-tec', ACCIONES_TEC, 'tec', selTec);
+  buildAcciones('acc-ped', ACCIONES_PED, 'ped', selPed);
+  buildAcciones('e-acc-tec', ACCIONES_TEC, 'tec', eSelTec, true);
+  buildAcciones('e-acc-ped', ACCIONES_PED, 'ped', eSelPed, true);
+  setupEscuelaSearch();
+  cargarPerfil();
+})();
+
+function isoHoy(){ return new Date().toISOString().split('T')[0]; }
+
+// ── ACCIONES BUILD ────────────────────────────────────────────────────────────
+function buildAcciones(containerId, lista, tipo, setRef, isEdit=false){
+  const c = document.getElementById(containerId);
+  c.innerHTML = lista.map(a => `
+    <div class="acc-item" id="${isEdit?'e':'f'}-${tipo}-${a.replace(/[^a-z]/gi,'')}" onclick="toggleAcc('${a}','${tipo}',${isEdit})">
+      <div class="acc-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <div>
+        <div class="acc-cat ${tipo}-tag">${tipo==='tec'?'⚙️ Técnica':'📚 Pedagógica'}</div>
+        <div class="acc-label">${a}</div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleAcc(accion, tipo, isEdit=false){
+  const setRef = isEdit ? (tipo==='tec'?eSelTec:eSelPed) : (tipo==='tec'?selTec:selPed);
+  if(setRef.has(accion)) setRef.delete(accion); else setRef.add(accion);
+  const prefix = isEdit ? 'e' : 'f';
+  const key = `${prefix}-${tipo}-${accion.replace(/[^a-z]/gi,'')}`;
+  const el = document.getElementById(key);
+  if(el){
+    el.classList.toggle(`${tipo}-sel`, setRef.has(accion));
+  }
+  if(!isEdit) updateCatChecks();
+}
+
+function updateCatChecks(){
+  document.getElementById('chk-tec').checked = selTec.size > 0;
+  document.getElementById('chk-ped').checked = selPed.size > 0;
+}
+
+function toggleCat(tipo, forceOpen){
+  const body = document.getElementById('body-'+tipo);
+  const chk = document.getElementById('chk-'+tipo);
+  const isOpen = body.classList.contains('open');
+  const shouldOpen = forceOpen !== undefined ? forceOpen : !isOpen;
+  body.classList.toggle('open', shouldOpen);
+  chk.checked = shouldOpen;
+}
+
+// ── BÚSQUEDA ESCUELAS ─────────────────────────────────────────────────────────
+function setupEscuelaSearch(){
+  const input = document.getElementById('f-inst-search');
+  const drop = document.getElementById('drop-inst');
+  const distFiltro = document.getElementById('f-filtro-dist');
+
+  function render(){
+    const q = input.value.toLowerCase().trim();
+    const d = distFiltro.value;
+    let list = ESCUELAS;
+    if(d) list = list.filter(e => e.distrito == d);
+    if(q) list = list.filter(e => e.nombre.toLowerCase().includes(q) || e.localidad.toLowerCase().includes(q));
+    list = list.slice(0,30);
+    if(!list.length || !q){ drop.classList.remove('open'); return; }
+    drop.innerHTML = list.map((e,i) => `
+      <div class="drop-item" onclick="selEscuela(${ESCUELAS.indexOf(e)})">
+        ${e.nombre}
+        <div class="di-sub">${e.localidad}</div>
+      </div>`).join('');
+    drop.classList.add('open');
+  }
+
+  input.addEventListener('input', render);
+  distFiltro.addEventListener('change', render);
+  document.addEventListener('click', e => { if(!e.target.closest('.dropdown')&&!e.target.closest('#f-filtro-dist')) drop.classList.remove('open'); });
+}
+
+function selEscuela(idx){
+  const e = ESCUELAS[idx];
+  document.getElementById('f-inst-id').value = idx;
+  document.getElementById('f-inst-search').value = '';
+  document.getElementById('drop-inst').classList.remove('open');
+  document.getElementById('esc-nom').textContent = e.nombre;
+  document.getElementById('esc-loc').textContent = e.localidad;
+  document.getElementById('esc-sel').classList.add('show');
+  document.getElementById('f-inst-libre').value = '';
+}
+
+function clearEsc(){
+  document.getElementById('f-inst-id').value = '';
+  document.getElementById('esc-sel').classList.remove('show');
+}
+
+function getInstNombre(){
+  const id = document.getElementById('f-inst-id').value;
+  if(id !== '') return ESCUELAS[parseInt(id)].nombre + ' — ' + ESCUELAS[parseInt(id)].localidad;
+  return document.getElementById('f-inst-libre').value.trim();
+}
+
+// ── GUARDAR ───────────────────────────────────────────────────────────────────
+function guardar(){
+  const fecha = document.getElementById('f-fecha').value;
+  const mod = document.getElementById('f-mod').value;
+  const inst = getInstNombre();
+  const ent = document.getElementById('f-ent').value;
+  const sal = document.getElementById('f-sal').value;
+  const obs = document.getElementById('f-obs').value.trim();
+  const tec = [...selTec];
+  const ped = [...selPed];
+
+  if(!fecha){toast('Ingresá una fecha');return;}
+  if(!tec.length && !ped.length){toast('Seleccioná al menos una acción');return;}
+
+  acts.push({id:Date.now(),fecha,mod,inst,ent,sal,obs,tec,ped});
+  save();
+
+  // reset
+  selTec.clear(); selPed.clear();
+  document.querySelectorAll('#acc-tec .acc-item, #acc-ped .acc-item').forEach(el=>{
+    el.classList.remove('tec-sel','ped-sel');
+  });
+  updateCatChecks();
+  document.getElementById('body-tec').classList.remove('open');
+  document.getElementById('body-ped').classList.remove('open');
+  clearEsc();
+  document.getElementById('f-inst-libre').value='';
+  document.getElementById('f-ent').value='';
+  document.getElementById('f-sal').value='';
+  document.getElementById('f-obs').value='';
+  document.getElementById('f-fecha').value=isoHoy();
+  toast('✓ Actividad guardada');
+}
+
+function save(){ localStorage.setItem('dgicd3_acts',JSON.stringify(acts)); }
+
+// ── VIEWS ─────────────────────────────────────────────────────────────────────
+function showView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.bn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('bn-'+v).classList.add('active');
+  if(v==='lista') renderLista();
+  if(v==='planilla'){renderStats();renderPlanilla();}
+}
+
+// ── LISTA ─────────────────────────────────────────────────────────────────────
+function filtrar(f){
+  filtro=f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('fa'));
+  document.getElementById('f-'+f).classList.add('fa');
+  renderLista();
+}
+
+function renderLista(){
+  const cnt=document.getElementById('lista-cnt');
+  let data=[...acts].sort((a,b)=>b.fecha.localeCompare(a.fecha));
+  if(filtro==='tec') data=data.filter(a=>a.tec&&a.tec.length);
+  if(filtro==='ped') data=data.filter(a=>a.ped&&a.ped.length);
+  if(!data.length){
+    cnt.innerHTML=`<div class="empty"><div class="empty-icon">📋</div><p>No hay actividades${filtro!=='todos'?' de esta categoría':''}.<br>Usá <strong>Nueva</strong> para agregar.</p></div>`;
+    return;
+  }
+  cnt.innerHTML=data.map(a=>{
+    const hasTec=a.tec&&a.tec.length, hasPed=a.ped&&a.ped.length;
+    const cls=hasTec&&hasPed?'both':hasTec?'tec':'ped';
+    const horas=(a.ent||a.sal)?a.ent+' → '+a.sal:'';
+    const accStr=[...(a.tec||[]).map(x=>'⚙️ '+x),...(a.ped||[]).map(x=>'📚 '+x)].join('<br>');
+    return `<div class="swipe-wrap" id="wrap-${a.id}">
+      <div class="swipe-bg"><span>🗑 Eliminar</span></div>
+      <div class="act-card ${cls}" data-id="${a.id}">
+        <div class="act-head">
+          <div class="act-fecha">${fmtFecha(a.fecha)}</div>
+          <div class="badges">
+            ${hasTec?'<span class="badge badge-tec">⚙️ Técnica</span>':''}
+            ${hasPed?'<span class="badge badge-ped">📚 Pedagógica</span>':''}
+          </div>
+        </div>
+        <div class="act-meta">${a.mod}${horas?' · '+horas:''}</div>
+        ${a.inst?`<div class="act-inst">🏫 ${a.inst}</div>`:''}
+        <div class="act-acciones">${accStr}</div>
+        ${a.obs?`<div style="font-size:12px;color:var(--gt);margin-top:4px">${a.obs}</div>`:''}
+        <div class="act-btns">
+          <button class="btn-sm" onclick="abrirEdit(${a.id})">Editar</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  requestAnimationFrame(initSwipe);
+}
+
+function fmtFecha(s){
+  const ds=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],ms=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const d=new Date(s+'T12:00:00');
+  return ds[d.getDay()]+' '+d.getDate()+' '+ms[d.getMonth()];
+}
+
+function eliminar(id){
+  const wrap = document.getElementById('wrap-'+id);
+  if(wrap){ wrap.querySelector('.act-card').classList.add('removing'); setTimeout(()=>{ acts=acts.filter(a=>a.id!==id);save();renderLista(); },260); }
+  else { acts=acts.filter(a=>a.id!==id);save();renderLista(); }
+}
+
+// ── SWIPE TO DELETE ───────────────────────────────────────────────────────────
+function initSwipe(){
+  document.querySelectorAll('.act-card[data-id]').forEach(card=>{
+    let startX=0,startY=0,curX=0,swiping=false,decided=false,isH=false;
+    const id=parseInt(card.dataset.id);
+    card.addEventListener('touchstart',e=>{
+      startX=e.touches[0].clientX;startY=e.touches[0].clientY;
+      curX=0;swiping=true;decided=false;isH=false;
+      card.style.transition='none';
+    },{passive:true});
+    card.addEventListener('touchmove',e=>{
+      if(!swiping)return;
+      const dx=e.touches[0].clientX-startX;
+      const dy=e.touches[0].clientY-startY;
+      if(!decided){decided=true;isH=Math.abs(dx)>Math.abs(dy);}
+      if(!isH)return;
+      curX=Math.min(0,dx);
+      card.style.transform=`translateX(${curX}px)`;
+    },{passive:true});
+    card.addEventListener('touchend',()=>{
+      if(!swiping)return;swiping=false;
+      card.style.transition='transform .2s ease';
+      if(curX<-80){ eliminar(id); }
+      else{ card.style.transform='translateX(0)'; }
+    });
+  });
+}
+
+// ── EDITAR ────────────────────────────────────────────────────────────────────
+function abrirEdit(id){
+  editId=id;
+  const a=acts.find(x=>x.id===id);
+  document.getElementById('e-fecha').value=a.fecha;
+  document.getElementById('e-mod').value=a.mod;
+  document.getElementById('e-inst').value=a.inst||'';
+  document.getElementById('e-ent').value=a.ent||'';
+  document.getElementById('e-sal').value=a.sal||'';
+  document.getElementById('e-obs').value=a.obs||'';
+  // rebuild edit acciones
+  eSelTec = new Set(a.tec||[]);
+  eSelPed = new Set(a.ped||[]);
+  buildAcciones('e-acc-tec',ACCIONES_TEC,'tec',eSelTec,true);
+  buildAcciones('e-acc-ped',ACCIONES_PED,'ped',eSelPed,true);
+  eSelTec.forEach(acc=>{const el=document.getElementById(`e-tec-${acc.replace(/[^a-z]/gi,'')}`);if(el)el.classList.add('tec-sel');});
+  eSelPed.forEach(acc=>{const el=document.getElementById(`e-ped-${acc.replace(/[^a-z]/gi,'')}`);if(el)el.classList.add('ped-sel');});
+  document.getElementById('modal-bg').classList.add('open');
+}
+
+function cerrarModal(){document.getElementById('modal-bg').classList.remove('open');editId=null;}
+
+function guardarEdit(){
+  const a=acts.find(x=>x.id===editId);if(!a)return;
+  a.fecha=document.getElementById('e-fecha').value;
+  a.mod=document.getElementById('e-mod').value;
+  a.inst=document.getElementById('e-inst').value.trim();
+  a.ent=document.getElementById('e-ent').value;
+  a.sal=document.getElementById('e-sal').value;
+  a.obs=document.getElementById('e-obs').value.trim();
+  a.tec=[...eSelTec];
+  a.ped=[...eSelPed];
+  save();cerrarModal();renderLista();toast('✓ Actualizado');
+}
+
+document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)cerrarModal();});
+
+// ── PERFIL ────────────────────────────────────────────────────────────────────
+function cargarPerfil(){
+  document.getElementById('p-nombre').value=perfil.nombre;
+  document.getElementById('p-leg').value=perfil.legajo;
+  document.getElementById('p-anio').value=perfil.anio;
+  const ms=document.getElementById('p-mes');
+  for(let i=0;i<ms.options.length;i++) if(ms.options[i].value===perfil.mes){ms.selectedIndex=i;break;}
+  document.getElementById('hmes').textContent=perfil.mes+' '+perfil.anio;
+}
+function guardarPerfil(){
+  perfil.nombre=document.getElementById('p-nombre').value.trim();
+  perfil.legajo=document.getElementById('p-leg').value.trim();
+  perfil.mes=document.getElementById('p-mes').value;
+  perfil.anio=document.getElementById('p-anio').value;
+  localStorage.setItem('dgicd3_perf',JSON.stringify(perfil));
+  document.getElementById('hmes').textContent=perfil.mes+' '+perfil.anio;
+  toast('✓ Datos guardados');
+}
+
+// ── PLANILLA VIEW ─────────────────────────────────────────────────────────────
+function renderStats(){
+  const ntec=acts.filter(a=>a.tec&&a.tec.length).length;
+  const nped=acts.filter(a=>a.ped&&a.ped.length).length;
+  document.getElementById('stats-cnt').innerHTML=`
+    <div class="stats">
+      <div class="stat tec"><div class="stat-n">${ntec}</div><div class="stat-l">⚙️ Técnicas</div></div>
+      <div class="stat ped"><div class="stat-n">${nped}</div><div class="stat-l">📚 Pedagógicas</div></div>
+    </div>`;
+}
+
+function renderPlanilla(){
+  const cnt=document.getElementById('plan-cnt');
+  if(!acts.length){cnt.innerHTML='<div class="empty"><div class="empty-icon">📅</div><p>Agregá actividades para ver la planilla.</p></div>';return;}
+  const byF={};
+  acts.forEach(a=>{if(!byF[a.fecha])byF[a.fecha]=[];byF[a.fecha].push(a);});
+  const sems=getSemanas(byF);
+  let html='';
+  sems.forEach((sem,i)=>{
+    html+=`<div class="sem-lbl">Semana ${i+1}</div>`;
+    sem.forEach(({date,key})=>{
+      const list=byF[key]||[];
+      const dias=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+      const head=dias[date.getDay()]+' '+date.getDate();
+      const a0=list[0];
+      const horas=a0&&(a0.ent||a0.sal)?(a0.ent||'—')+' / '+(a0.sal||'—'):'';
+      html+=`<div class="dia-card">
+        <div class="dia-head"><span>${head}</span><span style="font-size:11px;opacity:.75">${horas}</span></div>
+        <div class="dia-body">${list.length?list.map(a=>{
+          const tecStr=(a.tec||[]).map(x=>`<span style="color:var(--az)">⚙️ ${x}</span>`).join(', ');
+          const pedStr=(a.ped||[]).map(x=>`<span style="color:var(--v)">📚 ${x}</span>`).join(', ');
+          return `<div class="dia-act">
+            <div style="font-size:11px;font-weight:800;color:var(--gt);text-transform:uppercase">${a.mod}</div>
+            ${a.inst?`<div style="font-size:13px;font-weight:700">${a.inst}</div>`:''}
+            <div style="font-size:13px;line-height:1.6">${[tecStr,pedStr].filter(Boolean).join(' · ')}</div>
+            ${a.obs?`<div style="font-size:11px;color:var(--gt)">${a.obs}</div>`:''}
+          </div>`;
+        }).join(''):'<div class="dia-empty">Sin actividad</div>'}</div>
+      </div>`;
+    });
+  });
+  cnt.innerHTML=html;
+}
+
+function getSemanas(byF){
+  const fechas=Object.keys(byF).sort();
+  const sems={};
+  fechas.forEach(f=>{
+    const d=new Date(f+'T12:00:00');
+    const lu=new Date(d);lu.setDate(d.getDate()-((d.getDay()+6)%7));
+    const key=lu.toISOString().split('T')[0];
+    if(!sems[key]){sems[key]={lunes:lu,dias:[]};}
+    sems[key].dias.push({date:d,key:f});
+  });
+  return Object.values(sems).sort((a,b)=>a.lunes-b.lunes).map(s=>s.dias);
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────────────────────────
+function exportCSV(){
+  if(!acts.length){toast('No hay actividades');return;}
+  const rows=[
+    ['Ministerio de Educación del Neuquén - DGIyCD'],
+    ['Planilla de Asistencia '+perfil.anio+' - MES: '+perfil.mes.toUpperCase()],
+    ['Nombre y Apellido',perfil.nombre],['N° de Empleado',perfil.legajo],[],
+    ['Fecha','Día','Modalidad','Institución','Hs.Entrada','Hs.Salida','Acciones Técnicas','Acciones Pedagógicas','Observaciones']
+  ];
+  [...acts].sort((a,b)=>a.fecha.localeCompare(b.fecha)).forEach(a=>{
+    rows.push([a.fecha,fmtFecha(a.fecha),a.mod,a.inst||'',(a.tec||[]).join(' | '),(a.ped||[]).join(' | '),a.obs||'']);
+  });
+  const csv=rows.map(r=>r.map(c=>'"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  dl('\uFEFF'+csv,'text/csv','planilla_'+perfil.mes.toLowerCase()+'_'+perfil.anio+'.csv');
+  toast('✓ CSV descargado');
+}
+
+// ── EXPORT DOCX ───────────────────────────────────────────────────────────────
+async function exportDOCX(){
+  if(!acts.length){toast('No hay actividades');return;}
+  if(typeof docx==='undefined'){toast('Cargando librería…');return;}
+  toast('Generando planilla Word…');
+  const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,AlignmentType,WidthType,BorderStyle,ShadingType,VerticalAlign}=docx;
+  const VERDE='1E4D3B',GRIS='D9D9D9';
+  function brd(c='000000',s=4){return{style:BorderStyle.SINGLE,size:s,color:c};}
+  const B={top:brd(),bottom:brd(),left:brd(),right:brd()};
+  const WN=2200,WL=1200,WH=562,WD=WH*2,TOTAL=WN+WL+WD*5;
+  const DIAS=['DOMINGO','LUNES','MARTES','MIÉRCOLES','JUEVES','VIERNES','SÁBADO'];
+
+  function hc(txt,w,bg=VERDE,fg='FFFFFF'){
+    return new TableCell({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:txt,bold:true,color:fg,font:'Arial',size:16})]})],shading:{fill:bg,type:ShadingType.CLEAR},borders:B,verticalAlign:VerticalAlign.CENTER,margins:{top:60,bottom:60,left:60,right:60},width:{size:w,type:WidthType.DXA}});
+  }
+  function tc(txt,w){
+    return new TableCell({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:String(txt||''),font:'Arial',size:18})]})],borders:B,verticalAlign:VerticalAlign.CENTER,margins:{top:60,bottom:60,left:80,right:80},width:{size:w,type:WidthType.DXA}});
+  }
+
+  const byF={};
+  acts.forEach(a=>{if(!byF[a.fecha])byF[a.fecha]=[];byF[a.fecha].push(a);});
+  const sems=getSemanas(byF);
+
+  const children=[
+    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:80},children:[new TextRun({text:'Ministerio de Educación del Neuquén: Dirección General de Innovación y Contenidos Digitales.',bold:true,font:'Arial',size:22})]}),
+    new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:200},children:[new TextRun({text:'Planilla de Asistencia '+perfil.anio+' - MES: '+perfil.mes.toUpperCase(),bold:true,font:'Arial',size:22})]}),
+  ];
+
+  sems.forEach((sem,si)=>{
+    if(si>0) children.push(new Paragraph({spacing:{before:300},children:[]}));
+    const lu=new Date(sem[0].date);
+    lu.setDate(sem[0].date.getDate()-((sem[0].date.getDay()+6)%7));
+    const dias5=[];
+    for(let i=0;i<5;i++){const d=new Date(lu);d.setDate(lu.getDate()+i);const k=d.toISOString().split('T')[0];dias5.push({date:d,key:k,actos:byF[k]||[]});}
+
+    const f1=[hc('Nombre y Apellido',WN),hc('N° de empleado',WL),...dias5.map(d=>new TableCell({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:DIAS[d.date.getDay()]+'…'+d.date.getDate(),bold:true,color:'FFFFFF',font:'Arial',size:16})]})],shading:{fill:VERDE,type:ShadingType.CLEAR},borders:B,verticalAlign:VerticalAlign.CENTER,columnSpan:2,margins:{top:60,bottom:60,left:60,right:60},width:{size:WD,type:WidthType.DXA}}))];
+    const f2=[tc('',WN),tc('',WL),...dias5.flatMap(()=>[new TableCell({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'HS ENTRADA',bold:true,font:'Arial',size:16})]})],shading:{fill:GRIS,type:ShadingType.CLEAR},borders:B,verticalAlign:VerticalAlign.CENTER,margins:{top:40,bottom:40,left:40,right:40},width:{size:WH,type:WidthType.DXA}}),new TableCell({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'HS SALIDA',bold:true,font:'Arial',size:16})]})],shading:{fill:GRIS,type:ShadingType.CLEAR},borders:B,verticalAlign:VerticalAlign.CENTER,margins:{top:40,bottom:40,left:40,right:40},width:{size:WH,type:WidthType.DXA}})])];
+    const f3=[tc('',WN),tc('',WL),...dias5.flatMap(d=>{const a0=d.actos[0];return[tc(a0?a0.ent||'':'',WH),tc(a0?a0.sal||'':'',WH)];})];
+    const f4=[
+      new TableCell({children:[new Paragraph({alignment:AlignmentType.LEFT,children:[new TextRun({text:perfil.nombre,bold:true,font:'Arial',size:18})]})],borders:B,verticalAlign:VerticalAlign.CENTER,margins:{top:60,bottom:60,left:80,right:80},width:{size:WN,type:WidthType.DXA}}),
+      new TableCell({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:perfil.legajo,bold:true,font:'Arial',size:18})]})],borders:B,verticalAlign:VerticalAlign.CENTER,margins:{top:60,bottom:60,left:60,right:60},width:{size:WL,type:WidthType.DXA}}),
+      ...dias5.map(d=>{
+        const lines=[];
+        if(!d.actos.length){lines.push(new Paragraph({children:[]}));}
+        else{
+          const a0=d.actos[0];
+          lines.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:a0.mod+'.',bold:true,font:'Arial',size:17})]}));
+          // Institución (sin distrito)
+          if(a0.inst){
+            // Strip "— LOCALIDAD" part if came from selector, only show school name
+            const instDisplay = a0.inst.includes(' — ') ? a0.inst.split(' — ')[0] : a0.inst;
+            lines.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:instDisplay,bold:true,font:'Arial',size:17})]}));
+          }
+          d.actos.forEach(a=>{
+            [...(a.tec||[]),...(a.ped||[])].forEach(acc=>{
+              lines.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:acc,bold:true,font:'Arial',size:17})]}));
+            });
+            if(a.obs) lines.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:a.obs,font:'Arial',size:16})]}));
+          });
+        }
+        return new TableCell({children:lines,borders:B,verticalAlign:VerticalAlign.TOP,margins:{top:60,bottom:60,left:80,right:80},columnSpan:2,width:{size:WD,type:WidthType.DXA}});
+      })
+    ];
+    children.push(new Table({width:{size:TOTAL,type:WidthType.DXA},columnWidths:[WN,WL,WH,WH,WH,WH,WH,WH,WH,WH,WH,WH],rows:[new TableRow({children:f1,tableHeader:true}),new TableRow({children:f2}),new TableRow({children:f3}),new TableRow({children:f4})]}));
+  });
+
+  const docdx=new Document({sections:[{properties:{page:{size:{width:16838,height:11906},margin:{top:720,right:720,bottom:720,left:720}}},children}]});
+  const buf=await Packer.toBlob(docdx);
+  const a=document.createElement('a');a.href=URL.createObjectURL(buf);a.download='planilla_'+perfil.mes.toLowerCase()+'_'+perfil.anio+'.docx';a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✓ Planilla Word descargada');
+}
+
+function dl(content,type,name){
+  const b=new Blob([content],{type});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=name;a.click();URL.revokeObjectURL(a.href);
+}
+
+function toast(m){
+  const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
+</script>
+</body>
+</html>
