@@ -126,10 +126,10 @@ textarea{resize:vertical;min-height:64px}
 .dia-act:last-child{margin:0;padding:0;border:none}
 
 /* EXPORT ROW */
-.exp-row{display:flex;gap:8px;margin-bottom:8px}
-.exp-row .btn{flex:1;margin:0;font-size:13px;padding:12px 8px}
-.exp-row .btn-share{flex:0 0 50px;margin:0;padding:12px 8px;background:var(--lima);color:var(--v);border:none;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center}
-.exp-row .btn-share svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.5}
+.exp-row{display:flex;gap:8px;margin-bottom:8px;align-items:stretch}
+.exp-row .btn{flex:1;margin:0;font-size:13px;padding:12px 8px;min-width:0}
+.exp-row .btn-share{flex:0 0 52px;width:52px;margin:0;padding:0;background:var(--lima);color:var(--v);border:none;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px}
+.exp-row .btn-share svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2.5}
 
 /* MODAL */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end}
@@ -275,36 +275,27 @@ textarea{resize:vertical;min-height:64px}
     <div class="ctitle">Exportar y Compartir</div>
 
     <div class="exp-row">
-      <button class="btn btn-v" onclick="exportCSV()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Excel (.csv)
-      </button>
-      <button class="btn-share" onclick="compartir('csv')" title="Compartir CSV">
+      <button class="btn btn-v" onclick="exportCSV()">⬇ Excel (.csv)</button>
+      <button class="btn-share" onclick="compartir('csv')" title="Compartir">
         <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       </button>
     </div>
 
     <div class="exp-row">
-      <button class="btn btn-g" onclick="exportDOCX()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Word (.docx)
-      </button>
-      <button class="btn-share" onclick="compartir('docx')" title="Compartir Word">
+      <button class="btn btn-g" onclick="exportDOCX()">⬇ Word (.docx)</button>
+      <button class="btn-share" onclick="compartir('docx')" title="Compartir">
         <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       </button>
     </div>
 
     <div class="exp-row">
-      <button class="btn btn-r" onclick="exportPDF()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        PDF
-      </button>
-      <button class="btn-share" onclick="compartir('pdf')" title="Compartir PDF">
+      <button class="btn btn-r" onclick="exportPDF()">⬇ PDF</button>
+      <button class="btn-share" onclick="compartir('pdf')" title="Compartir">
         <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       </button>
     </div>
 
-    <p style="font-size:11px;color:var(--gt);margin-top:8px;text-align:center">El botón verde comparte por WhatsApp, Gmail, Drive, etc.</p>
+    <p style="font-size:11px;color:var(--gt);margin-top:10px;text-align:center">⬇ descarga · botón verde = compartir por WhatsApp, Gmail, Drive…</p>
   </div>
 
 </div><!-- fin view-planilla -->
