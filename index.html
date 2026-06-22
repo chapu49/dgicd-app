@@ -143,12 +143,14 @@ textarea{resize:vertical;min-height:64px}
   <label>Fecha</label>
   <input type="date" id="f-fecha">
   <label>Modalidad</label>
-  <select id="f-mod">
+  <select id="f-mod" onchange="onModChange()">
     <option value="Territorio">Territorio</option>
     <option value="Virtual">Virtual</option>
     <option value="Sede">Sede / Oficina</option>
     <option value="Licencia">Licencia</option>
+    <option value="Franco Compensatorio">Franco Compensatorio</option>
   </select>
+  <div id="sec-inst">
   <label>Institución / Establecimiento</label>
   <select id="f-dist" style="margin-bottom:6px">
     <option value="">Todos los distritos</option>
@@ -167,10 +169,12 @@ textarea{resize:vertical;min-height:64px}
   </div>
   <input type="hidden" id="f-esc-id">
   <input type="text" id="f-inst-libre" placeholder="O escribir manualmente…" style="margin-top:6px;font-size:13px">
-  <div class="row2" style="margin-top:12px">
+  </div>
+  <div id="sec-horario" class="row2" style="margin-top:12px">
     <div><label>Hs. Entrada</label><input type="time" id="f-ent"></div>
     <div><label>Hs. Salida</label><input type="time" id="f-sal"></div>
   </div>
+  <div id="sec-acciones">
   <label style="margin-top:14px">Acciones realizadas</label>
   <div class="cat-sec">
     <div class="cat-hdr" onclick="toggleCat('tec')">
@@ -192,6 +196,7 @@ textarea{resize:vertical;min-height:64px}
       <span>🏛️ Dirección</span>
     </div>
     <div class="cat-body" id="body-dir"><div id="acc-dir"></div></div>
+  </div>
   </div>
   <label style="margin-top:14px">Observaciones</label>
   <textarea id="f-obs" placeholder="Notas adicionales (opcional)"></textarea>
@@ -267,7 +272,7 @@ textarea{resize:vertical;min-height:64px}
   <div class="modal-tit">Editar Actividad</div>
   <label>Fecha</label><input type="date" id="e-fecha">
   <label>Modalidad</label>
-  <select id="e-mod"><option>Territorio</option><option>Virtual</option><option>Sede</option><option>Licencia</option></select>
+  <select id="e-mod"><option>Territorio</option><option>Virtual</option><option>Sede</option><option>Licencia</option><option>Franco Compensatorio</option></select>
   <label>Institución</label>
   <input type="text" id="e-inst" placeholder="Establecimiento o lugar">
   <div class="row2">
@@ -719,6 +724,7 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('f-fecha').value = isoHoy();
   document.getElementById('f-ent').value = '08:00';
   document.getElementById('f-sal').value = '15:00';
+  onModChange();
   buildAcciones('acc-tec', ACCIONES_TEC, 'tec', false);
   buildAcciones('acc-ped', ACCIONES_PED, 'ped', false);
   buildAcciones('acc-dir', ACCIONES_DIR, 'dir', false);
@@ -728,6 +734,34 @@ window.addEventListener('DOMContentLoaded', function() {
   setupSearch();
   cargarPerfil();
 });
+
+function onModChange() {
+  var mod = document.getElementById('f-mod').value;
+  var noWork = (mod === 'Licencia' || mod === 'Franco Compensatorio');
+  document.getElementById('sec-inst').style.display = noWork ? 'none' : 'block';
+  document.getElementById('sec-horario').style.display = noWork ? 'none' : 'grid';
+  document.getElementById('sec-acciones').style.display = noWork ? 'none' : 'block';
+  if (noWork) {
+    // clear selections and hours
+    clearEsc();
+    document.getElementById('f-inst-libre').value = '';
+    document.getElementById('f-ent').value = '';
+    document.getElementById('f-sal').value = '';
+    selTec = []; selPed = []; selDir = [];
+    document.querySelectorAll('#acc-tec .acc-item, #acc-ped .acc-item, #acc-dir .acc-item').forEach(function(el) {
+      el.classList.remove('sel-tec', 'sel-ped', 'sel-dir');
+    });
+    document.getElementById('chk-tec').checked = false;
+    document.getElementById('chk-ped').checked = false;
+    document.getElementById('chk-dir').checked = false;
+    document.getElementById('body-tec').classList.remove('open');
+    document.getElementById('body-ped').classList.remove('open');
+    document.getElementById('body-dir').classList.remove('open');
+  } else {
+    if (!document.getElementById('f-ent').value) document.getElementById('f-ent').value = '08:00';
+    if (!document.getElementById('f-sal').value) document.getElementById('f-sal').value = '15:00';
+  }
+}
 
 function isoHoy() {
   return new Date().toISOString().split('T')[0];
@@ -860,8 +894,9 @@ function guardar() {
   var obs   = document.getElementById('f-obs').value.trim();
 
   if (!fecha) { toast('Ingresá una fecha'); return; }
-  if (mod !== 'Licencia' && !inst) { toast('Seleccioná o escribí una institución'); return; }
-  if (!selTec.length && !selPed.length && !selDir.length) { toast('Seleccioná al menos una acción'); return; }
+  var noWork = (mod === 'Licencia' || mod === 'Franco Compensatorio');
+  if (!noWork && !inst) { toast('Seleccioná o escribí una institución'); return; }
+  if (!noWork && !selTec.length && !selPed.length && !selDir.length) { toast('Seleccioná al menos una acción'); return; }
 
   acts.push({ id: Date.now(), fecha: fecha, mod: mod, inst: inst, ent: ent, sal: sal, obs: obs, tec: selTec.slice(), ped: selPed.slice(), dir: selDir.slice() });
   save();
@@ -887,6 +922,8 @@ function resetForm() {
   document.getElementById('f-sal').value = '15:00';
   document.getElementById('f-obs').value = '';
   document.getElementById('f-fecha').value = isoHoy();
+  document.getElementById('f-mod').value = 'Territorio';
+  onModChange();
 }
 
 function save() { localStorage.setItem('dgicd4', JSON.stringify(acts)); }

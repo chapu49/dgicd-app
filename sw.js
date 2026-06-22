@@ -1,4 +1,4 @@
-const CACHE = 'dgicd-v9';
+const CACHE = 'dgicd-v10';
 const ASSETS = [
   './',
   './index.html',
