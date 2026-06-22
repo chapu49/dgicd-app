@@ -717,6 +717,8 @@ window.addEventListener('DOMContentLoaded', function() {
     navigator.serviceWorker.register('sw.js').catch(function(){});
   }
   document.getElementById('f-fecha').value = isoHoy();
+  document.getElementById('f-ent').value = '08:00';
+  document.getElementById('f-sal').value = '15:00';
   buildAcciones('acc-tec', ACCIONES_TEC, 'tec', false);
   buildAcciones('acc-ped', ACCIONES_PED, 'ped', false);
   buildAcciones('acc-dir', ACCIONES_DIR, 'dir', false);
@@ -858,12 +860,14 @@ function guardar() {
   var obs   = document.getElementById('f-obs').value.trim();
 
   if (!fecha) { toast('Ingresá una fecha'); return; }
+  if (mod !== 'Licencia' && !inst) { toast('Seleccioná o escribí una institución'); return; }
   if (!selTec.length && !selPed.length && !selDir.length) { toast('Seleccioná al menos una acción'); return; }
 
   acts.push({ id: Date.now(), fecha: fecha, mod: mod, inst: inst, ent: ent, sal: sal, obs: obs, tec: selTec.slice(), ped: selPed.slice(), dir: selDir.slice() });
   save();
   resetForm();
   toast('✓ Actividad guardada');
+  renderLista();
 }
 
 function resetForm() {
@@ -879,8 +883,8 @@ function resetForm() {
   document.getElementById('body-dir').classList.remove('open');
   clearEsc();
   document.getElementById('f-inst-libre').value = '';
-  document.getElementById('f-ent').value = '';
-  document.getElementById('f-sal').value = '';
+  document.getElementById('f-ent').value = '08:00';
+  document.getElementById('f-sal').value = '15:00';
   document.getElementById('f-obs').value = '';
   document.getElementById('f-fecha').value = isoHoy();
 }
@@ -1127,12 +1131,8 @@ function renderPlanilla() {
       if (list.length) {
         list.forEach(function(a) {
           var instD = a.inst ? (a.inst.indexOf(' — ') >= 0 ? a.inst.split(' — ')[0] : a.inst) : '';
-          var tecStr = (a.tec || []).map(function(x) { return '<span style="color:var(--v)">⚙️ ' + x + '</span>'; }).join(', ');
-          var pedStr = (a.ped || []).map(function(x) { return '<span style="color:#3a6020">📚 ' + x + '</span>'; }).join(', ');
-          var dirStr = (a.dir || []).map(function(x) { return '<span style="color:#8b5a00">🏛️ ' + x + '</span>'; }).join(', ');
           html += '<div class="dia-act"><div style="font-size:11px;font-weight:800;color:var(--gt);text-transform:uppercase">' + a.mod + '</div>' +
             (instD ? '<div style="font-size:13px;font-weight:700">' + instD + '</div>' : '') +
-            '<div style="font-size:13px;line-height:1.6">' + [tecStr, pedStr, dirStr].filter(Boolean).join(' · ') + '</div>' +
             (a.obs ? '<div style="font-size:11px;color:var(--gt)">' + a.obs + '</div>' : '') + '</div>';
         });
       } else {
